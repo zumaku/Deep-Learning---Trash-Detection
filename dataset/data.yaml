@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 3
+names: ['b3', 'non-organik', 'organik']
+
+roboflow:
+  workspace: deep-learning-xiqhb
+  project: deteksi-sampah-z0fg7
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/deep-learning-xiqhb/deteksi-sampah-z0fg7/dataset/1
