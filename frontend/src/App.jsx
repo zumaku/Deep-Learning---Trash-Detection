@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import axios from "axios";
 
@@ -6,10 +6,23 @@ const App = () => {
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
     const [detectionResult, setDetectionResult] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        // console.log("detectionResult terupdate")
+        detectionResult !== null && drawDetection()
+    }, [detectionResult])
+
+    useEffect(() => {
+        // console.log("isLoading terupdate")
+    }, [isLoading])
 
     const capture = async () => {
         const imageSrc = webcamRef.current.getScreenshot();
         const formData = new FormData();
+
+        setIsLoading(true);
+
         formData.append(
             "file",
             dataURLtoFile(imageSrc, "snapshot.jpg"),
@@ -18,7 +31,8 @@ const App = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/predict",
+                // "http://192.168.7.110:5000/predict",
+                "http://127.0.0.1:5000/predict",
                 formData,
                 {
                     headers: {
@@ -27,8 +41,10 @@ const App = () => {
                 }
             );
             setDetectionResult(response.data.result);
+            setIsLoading(false)
         } catch (error) {
             console.error(error);
+            setIsLoading(false)
         }
     };
 
@@ -57,26 +73,48 @@ const App = () => {
     };
 
     return (
-        <div>
-            <h1>Realtime Object Detection</h1>
-            <div style={{ display: "flex", justifyContent: "center" }}>
-                <Webcam
-                    audio={false}
-                    ref={webcamRef}
-                    screenshotFormat="image/jpeg"
-                    width={640}
-                    height={480}
-                    style={{ margin: "auto" }}
-                />
-            </div>
-            <button onClick={capture}>Capture</button>
-            {detectionResult && (
-                <div style={{ textAlign: "center" }}>
-                    <h2>Detected Objects</h2>
-                    <canvas ref={canvasRef} />
-                    <button onClick={drawDetection}>Draw Detection</button>
+        <div className="w-full p-10 flex flex-col items-center m-auto">
+            <h1 className="m-auto text-5xl font-bold mb-2 text-center">Trash Classification</h1>
+            <p className="mb-10">Dikembangkan Oleh <a href="#footer" className="font-bold hover:underline">Kelompok 2 - Kelas A</a></p>
+
+            <div className="flex flex-col justify-between items-center mb-10 gap-3">
+                <div className="flex flex-col justify-between w-100 sm:w-1/2 rounded-xl overflow-hidden">
+                    <Webcam
+                        audio={false}
+                        ref={webcamRef}
+                        screenshotFormat="image/jpeg"
+                        width={640}
+                        height={480}
+                        className="mb-3 rounded-b-xl"
+                    />
+                    <div className="flex gap-2">
+                        <button onClick={capture} className="w-full rounded-xl font-bold py-3 text-lg bg-slate-50 hover:bg-slate-200 active:bg-slate-400 text-[#242424]">Capture</button>
+                        <button className="w-full rounded-xl font-bold py-3 text-lg bg-slate-50 hover:bg-slate-200 active:bg-slate-400 text-[#242424]">Upload</button>
+                    </div>
                 </div>
-            )}
+
+                <dir className="w-full h-0.5 bg-gray-400"></dir>
+
+                <div className="flex flex-col justify-between w-full rounded-xl overflow-hidden">
+                    {!isLoading && detectionResult ? (
+                        <canvas
+                            ref={canvasRef}
+                            className="rounded-xl w-full"
+                        />
+                    ): (
+                        <div className="w-full p-4 aspect-video border-2 border-dashed border-gray-300 flex justify-center items-center rounded-xl mb-3">
+                            {isLoading ? (
+                                <p className="text-gray-300">Loading...</p>
+                            ):(
+                                <p className="text-gray-300">Hasil deteksi akan tampil disini...</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <p className="text-center">Dipersembahkan oleh Para Developer Hebar Kelas A</p>
+            <p className="font-bold text-center" id="footer">Ahmad Gazali | Amrul Ahsanullah | Rafiul Muiz | Fajri Ishar | Zul Fadli</p>
         </div>
     );
 };
