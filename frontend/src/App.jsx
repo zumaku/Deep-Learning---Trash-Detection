@@ -5,6 +5,7 @@ import axios from "axios";
 const App = () => {
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
+    const fileInputRef = useRef(null);
     const [detectionResult, setDetectionResult] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -48,6 +49,37 @@ const App = () => {
         }
     };
 
+    const handleFileChange = async (event) => {
+        const file = event.target.files[0];
+        const formData = new FormData();
+
+        setIsLoading(true);
+
+        formData.append("file", file);
+
+        try {
+            const response = await axios.post(
+                // "http://192.168.7.110:5000/predict",
+                "http://127.0.0.1:5000/predict",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            setDetectionResult(response.data.result);
+            setIsLoading(false)
+        } catch (error) {
+            console.error(error);
+            setIsLoading(false)
+        }
+    }
+
+    const triggerFileInput = () => {
+        fileInputRef.current.click();
+    };
+
     const dataURLtoFile = (dataurl, filename) => {
         const arr = dataurl.split(",");
         const mime = arr[0].match(/:(.*?);/)[1];
@@ -89,7 +121,14 @@ const App = () => {
                     />
                     <div className="flex gap-2">
                         <button onClick={capture} className="w-full rounded-xl font-bold py-3 text-lg bg-slate-50 hover:bg-slate-200 active:bg-slate-400 text-[#242424]">Capture</button>
-                        <button className="w-full rounded-xl font-bold py-3 text-lg bg-slate-50 hover:bg-slate-200 active:bg-slate-400 text-[#242424]">Upload</button>
+                        <button onClick={triggerFileInput} className="w-full rounded-xl font-bold py-3 text-lg bg-slate-50 hover:bg-slate-200 active:bg-slate-400 text-[#242424]">Upload</button>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }}
+                        />
                     </div>
                 </div>
 
