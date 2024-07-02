@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Load model
-model = YOLO('../model/best.pt')  # Ganti dengan path model Anda
+model = YOLO('../model/model_v1/best.pt')  # Ganti dengan path model Anda
 
 def read_imagefile(file) -> np.ndarray:
     image = np.frombuffer(file.read(), np.uint8)
